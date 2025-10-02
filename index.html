@@ -7,7 +7,7 @@
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: #FDFD96; /* fundo amarelo uniforme */
+    background: #FDFD96;
     color: #fff;
     margin: 0;
     padding: 2rem;
@@ -46,7 +46,7 @@
     color: #d33;
   }
 
-  #status, #current {
+  #status {
     font-size: 1.2rem;
     margin: 0.5rem 0;
     background: rgba(0,0,0,0.2);
@@ -56,9 +56,20 @@
     transition: background 0.3s;
   }
 
-  #current {
+  button {
+    margin-top: 1rem;
+    padding: 0.8rem 1.5rem;
     font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    background-color: #222;
     color: #fff;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  button:hover {
+    background-color: #555;
   }
 
   @keyframes pulse {
@@ -78,7 +89,9 @@
   <h1>Distância até o Posto Gentil</h1>
   <div id="dist">Calculando...</div>
   <div id="status"></div>
-  <div id="current">Sua posição atual: —</div>
+
+  <!-- Botão para pular a verificação -->
+  <button id="skipBtn">Pular verificação (APENAS PARA TESTES)</button>
 
 <script>
 // Coordenadas fixas do Posto Gentil
@@ -114,12 +127,12 @@ function update(pos) {
     distEl.classList.remove("pulse");
   }
 
-  document.getElementById("status").textContent = d < 100
+  const statusEl = document.getElementById("status");
+  statusEl.textContent = d < 100
     ? "🚩 Perto"
     : "📍 Muito longe, só é possível realizar a pesquisa nas dependências do posto";
 
-  document.getElementById("current").textContent = `Sua posição atual: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
-
+  // Redireciona automaticamente se perto
   if (d < 100) {
     window.location.href = urlPesquisa;
   }
@@ -127,8 +140,14 @@ function update(pos) {
 
 function error(err) {
   document.getElementById("dist").textContent = "Erro no GPS";
-  document.getElementById("status").textContent = err.message;
+  const statusEl = document.getElementById("status");
+  statusEl.textContent = err.message;
 }
+
+// Evento do botão de pular verificação
+document.getElementById("skipBtn").addEventListener("click", () => {
+  window.location.href = urlPesquisa;
+});
 
 navigator.geolocation.watchPosition(update, error, { enableHighAccuracy: true });
 </script>
