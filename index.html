@@ -4,11 +4,13 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Distância até o destino</title>
+<!-- Link para a fonte Poppins -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   body {
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
     background: #FDFD96;
-    color: #fff;
+    color: #37352f; /* cor do texto atualizada */
     margin: 0;
     padding: 2rem;
     text-align: center;
@@ -29,15 +31,13 @@
   h1 {
     font-size: 2rem;
     margin-bottom: 1rem;
-    text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
   }
 
   #dist {
     font-size: 3rem;
-    font-weight: bold;
+    font-weight: 700;
     margin: 1rem 0;
     display: inline-block;
-    text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
     transition: transform 0.3s;
   }
 
@@ -49,11 +49,11 @@
   #status {
     font-size: 1.2rem;
     margin: 0.5rem 0;
-    background: rgba(0,0,0,0.2);
+    background: rgba(255,255,255,0.5);
+    color: #d33; /* mensagem de status longe em vermelho vivo */
     padding: 0.5rem 1rem;
     border-radius: 12px;
     display: inline-block;
-    transition: background 0.3s;
   }
 
   button {
@@ -62,14 +62,14 @@
     font-size: 1rem;
     border: none;
     border-radius: 8px;
-    background-color: #222;
-    color: #fff;
+    background-color: #37352f; /* combinando com a cor do texto */
+    color: #FDFD96;
     cursor: pointer;
     transition: background 0.3s;
   }
 
   button:hover {
-    background-color: #555;
+    background-color: #5a574f;
   }
 
   @keyframes pulse {
@@ -90,8 +90,7 @@
   <div id="dist">Calculando...</div>
   <div id="status"></div>
 
-  <!-- Botão para pular a verificação -->
-  <button id="skipBtn">Pular verificação (APENAS PARA TESTES)</button>
+  <button id="skipBtn">Pular verificação</button>
 
 <script>
 // Coordenadas fixas do Posto Gentil
@@ -132,7 +131,6 @@ function update(pos) {
     ? "🚩 Perto"
     : "📍 Muito longe, só é possível realizar a pesquisa nas dependências do posto";
 
-  // Redireciona automaticamente se perto
   if (d < 100) {
     window.location.href = urlPesquisa;
   }
@@ -144,7 +142,7 @@ function error(err) {
   statusEl.textContent = err.message;
 }
 
-// Evento do botão de pular verificação
+// Botão de pular verificação
 document.getElementById("skipBtn").addEventListener("click", () => {
   window.location.href = urlPesquisa;
 });
