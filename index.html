@@ -7,38 +7,69 @@
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: #FDFD96;
-    color: #222;
+    background: linear-gradient(135deg, #FF6B6B, #FFD93D);
+    color: #fff;
     margin: 0;
     padding: 2rem;
     text-align: center;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
   }
 
   .logo {
-    width: 140px;
+    width: 160px;
     margin-bottom: 1rem;
+    opacity: 0;
+    animation: fadeIn 1.5s forwards;
   }
 
   h1 {
-    font-size: 1.8rem;
+    font-size: 2rem;
     margin-bottom: 1rem;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
   }
 
   #dist {
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: bold;
     margin: 1rem 0;
+    display: inline-block;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+    transition: transform 0.3s;
   }
 
-  #status {
+  #dist.pulse {
+    animation: pulse 1s infinite;
+    color: #FFD93D;
+  }
+
+  #status, #current {
     font-size: 1.2rem;
     margin: 0.5rem 0;
+    background: rgba(0,0,0,0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    display: inline-block;
+    transition: background 0.3s;
   }
 
   #current {
     font-size: 1rem;
-    margin-top: 0.5rem;
-    color: #555;
+    color: #fff;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 </style>
 </head>
@@ -52,7 +83,7 @@
 <script>
 // Coordenadas fixas do Posto Gentil
 const DEST = { lat: -19.151280849020946, lon: -40.62683184296194 };
-const urlPesquisa = "https://tally.so/r/nGW75o"
+const urlPesquisa = "https://tally.so/r/nGW75o";
 
 // Haversine
 function haversine(lat1, lon1, lat2, lon2) {
@@ -74,15 +105,24 @@ function update(pos) {
   const { latitude, longitude } = pos.coords;
   const d = haversine(latitude, longitude, DEST.lat, DEST.lon);
 
-  document.getElementById("dist").textContent = formatDist(d);
+  const distEl = document.getElementById("dist");
+  distEl.textContent = formatDist(d);
+
+  if (d < 100) {
+    distEl.classList.add("pulse");
+  } else {
+    distEl.classList.remove("pulse");
+  }
+
   document.getElementById("status").textContent = d < 100
     ? "🚩 Perto"
-    : "📍 Você está muito longe, a pesquisa só pode ser realizada nas dependências do posto";
+    : "📍 Muito longe, só é possível realizar a pesquisa nas dependências do posto";
 
   document.getElementById("current").textContent = `Sua posição atual: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
 
-  // Redirecionamento opcional
-  // if (d < 100) window.location.href = urlPesquisa;
+  if (d < 100) {
+    window.location.href = urlPesquisa;
+  }
 }
 
 function error(err) {
