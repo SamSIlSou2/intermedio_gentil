@@ -1,31 +1,72 @@
-﻿<!-- Atenção, se tu não sabe mecher, não meche kakakakkak -->
-
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Distância até o destino</title>
 <style>
+  /* Fundo da página */
   body {
     font-family: Arial, sans-serif;
-    text-align: center;
     background: #FDFD96;
-    color: #222;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
     margin: 0;
-    padding: 2rem;
   }
-  h1 { font-size: 1.5rem; margin-bottom: 1rem; }
-  #dist { font-size: 2rem; font-weight: bold; margin: 1rem 0; }
-  #status { font-size: 1.2rem; margin-top: .5rem; }
-  #current { font-size: 1rem; margin-top: .5rem; color: #555; }
+
+  /* Card central */
+  .card {
+    background: #fff;
+    padding: 2rem 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    text-align: center;
+    max-width: 350px;
+    width: 100%;
+  }
+
+  /* Logo */
+  .logo {
+    width: 120px;
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+  }
+
+  #dist {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 1rem 0;
+  }
+
+  #status {
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+    color: #333;
+  }
+
+  #current {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    color: #555;
+  }
 </style>
 </head>
 <body>
-  <h1>Distância até o destino</h1>
-  <div id="dist">Calculando...</div>
-  <div id="status"></div>
-  <div id="current">Sua posição atual: —</div>
+  <div class="card">
+    <!-- Logo do Grupo Gentil -->
+    <img src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Grupo_Gentil_logo.png" alt="Grupo Gentil" class="logo">
+
+    <h1>Distância até o destino</h1>
+    <div id="dist">Calculando...</div>
+    <div id="status"></div>
+    <div id="current">Sua posição atual: —</div>
+  </div>
 
 <script>
 // Coordenadas fixas do Posto Gentil
@@ -34,7 +75,7 @@ const urlPesquisa = "https://tally.so/r/nGW75o"
 
 // Haversine para calcular a distância em metros
 function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371000; // raio da Terra em metros
+  const R = 6371000; 
   const toRad = x => x * Math.PI / 180;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
@@ -51,19 +92,19 @@ function formatDist(m) {
 function update(pos) {
   const { latitude, longitude } = pos.coords;
   
-  // Atualiza a distância
+  // Distância
   const d = haversine(latitude, longitude, DEST.lat, DEST.lon);
   document.getElementById("dist").textContent = formatDist(d);
-  
+
   // Status
   document.getElementById("status").textContent = d < 100
     ? "🚩 Perto"
     : "📍 Você está muito longe, a pesquisa só pode ser realizada nas dependências do posto";
 
-  // Mostra coordenadas atuais
+  // Coordenadas atuais
   document.getElementById("current").textContent = `Sua posição atual: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
 
-  // Redirecionamento (descomente se quiser)
+  // Redirecionamento opcional
   // if (d < 100) window.location.href = urlPesquisa;
 }
 
