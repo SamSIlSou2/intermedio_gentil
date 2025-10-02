@@ -1,0 +1,69 @@
+﻿<!-- Atennção, se tu não sabe mecher, não meche kakakakkak -->
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Distância até o destino</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #FDFD96;
+    color: #222;
+    margin: 0;
+    padding: 2rem;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+  #dist { font-size: 2rem; font-weight: bold; margin: 1rem 0; }
+  #status { font-size: 1.2rem; margin-top: .5rem; }
+</style>
+
+</head>
+<body>
+  <h1>Distância até o destino</h1>
+  <div id="dist">Calculando...</div>
+  <div id="status"></div>
+
+<script>
+// Coordenadas fixas do Posto Gentil
+const DEST = { lat: -19.151280849020946, lon: -40.62683184296194 };
+const urlPesquisa = "https://tally.so/r/nGW75o"
+
+// Haversine para calcular a distância em metros
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // raio da Terra em metros
+  const toRad = x => x * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon/2)**2;
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+function formatDist(m) {
+  return m < 1000 ? `${m.toFixed(1)} m` : `${(m/1000).toFixed(2)} km`;
+}
+
+function update(pos) {
+  const { latitude, longitude } = pos.coords;
+  const d = haversine(latitude, longitude, DEST.lat, DEST.lon);
+  document.getElementById("dist").textContent = formatDist(d);
+  document.getElementById("status").textContent = d < 100 ? "🚩 Perto" : "📍 Você está muito longe, a pesquisa só pode ser realizada nas dependencias do posto";
+  if (d < 10000000 )
+  {
+            window.location.href = urlPesquisa
+  }
+}
+
+function error(err) {
+  document.getElementById("dist").textContent = "Erro no GPS";
+  document.getElementById("status").textContent = err.message;
+}
+
+navigator.geolocation.watchPosition(update, error, { enableHighAccuracy: true });
+</script>
+</body>
+</html>
