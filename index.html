@@ -1,4 +1,4 @@
-﻿<!-- Atennção, se tu não sabe mecher, não meche kakakakkak -->
+﻿<!-- Atenção, se tu não sabe mecher, não meche kakakakkak -->
 
 <!doctype html>
 <html lang="pt-BR">
@@ -18,13 +18,14 @@
   h1 { font-size: 1.5rem; margin-bottom: 1rem; }
   #dist { font-size: 2rem; font-weight: bold; margin: 1rem 0; }
   #status { font-size: 1.2rem; margin-top: .5rem; }
+  #current { font-size: 1rem; margin-top: .5rem; color: #555; }
 </style>
-
 </head>
 <body>
   <h1>Distância até o destino</h1>
   <div id="dist">Calculando...</div>
   <div id="status"></div>
+  <div id="current">Sua posição atual: —</div>
 
 <script>
 // Coordenadas fixas do Posto Gentil
@@ -49,13 +50,21 @@ function formatDist(m) {
 
 function update(pos) {
   const { latitude, longitude } = pos.coords;
+  
+  // Atualiza a distância
   const d = haversine(latitude, longitude, DEST.lat, DEST.lon);
   document.getElementById("dist").textContent = formatDist(d);
-  document.getElementById("status").textContent = d < 100 ? "🚩 Perto" : "📍 Você está muito longe, a pesquisa só pode ser realizada nas dependencias do posto";
-  if (d < 10000000 )
-  {
-            ////window.location.href = urlPesquisa
-  }
+  
+  // Status
+  document.getElementById("status").textContent = d < 100
+    ? "🚩 Perto"
+    : "📍 Você está muito longe, a pesquisa só pode ser realizada nas dependências do posto";
+
+  // Mostra coordenadas atuais
+  document.getElementById("current").textContent = `Sua posição atual: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+
+  // Redirecionamento (descomente se quiser)
+  // if (d < 100) window.location.href = urlPesquisa;
 }
 
 function error(err) {
