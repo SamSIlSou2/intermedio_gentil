@@ -1,4 +1,10 @@
-﻿<!doctype html>
+﻿<!-- Atenção, se vc não souber programar em HTML e JavaScript, não mecha em nenhuma parte do codigo por favor -->
+<!-- Atenção, se vc não souber programar em HTML e JavaScript, não mecha em nenhuma parte do codigo por favor -->
+<!-- Atenção, se vc não souber programar em HTML e JavaScript, não mecha em nenhuma parte do codigo por favor -->
+<!-- Atenção, se vc não souber programar em HTML e JavaScript, não mecha em nenhuma parte do codigo por favor -->
+<!-- Atenção, se vc não souber programar em HTML e JavaScript, não mecha em nenhuma parte do codigo por favor -->
+
+<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
@@ -116,6 +122,7 @@
   </div>
 
   <div id="formContainer">
+    <!-- Aqui é onde troca o link do formulario que será indexado -->
     <iframe src="https://tally.so/r/nGW75o" title="Formulário Tally"></iframe>
   </div>
 
@@ -123,9 +130,9 @@
 // Coordenadas fixas do Posto Gentil
 const DEST = { lat: -19.151280849020946, lon: -40.62683184296194 };
 
-// Haversine
+// Haversine pra calcular a distância até o posto
 function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371000; 
+  const R = 6371000; // Esse é o raio da terra em Metros
   const toRad = x => x * Math.PI / 180;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
@@ -136,10 +143,12 @@ function haversine(lat1, lon1, lat2, lon2) {
 }
 
 function formatDist(m) {
+    //Resposnsavel por formatar a distância em KM, caso ultrapasse os 1.000 Metros
   return m < 1000 ? `${m.toFixed(1)} m` : `${(m/1000).toFixed(2)} km`;
 }
 
 function abrirFormulario() {
+    //Abre o IFrame do Formulário
   document.getElementById("mainContent").style.display = "none";
   document.getElementById("formContainer").style.display = "block";
 }
