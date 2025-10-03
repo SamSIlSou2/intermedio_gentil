@@ -1,10 +1,4 @@
-﻿<!-- Atenção, se vc não souber programar em HTML e JavaScript, não mecha em nenhuma parte do codigo por favor -->
-<!-- Atenção, se vc não souber programar em HTML e JavaScript, não mecha em nenhuma parte do codigo por favor -->
-<!-- Atenção, se vc não souber programar em HTML e JavaScript, não mecha em nenhuma parte do codigo por favor -->
-<!-- Atenção, se vc não souber programar em HTML e JavaScript, não mecha em nenhuma parte do codigo por favor -->
-<!-- Atenção, se vc não souber programar em HTML e JavaScript, não mecha em nenhuma parte do codigo por favor -->
-
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
@@ -36,12 +30,12 @@
     width: 160px;
     margin-bottom: 1rem;
     opacity: 0;
-    animation: fadeIn 1.5s forwards;
   }
 
   h1 {
     font-size: 2rem;
     margin-bottom: 1rem;
+    opacity: 0;
   }
 
   #dist {
@@ -50,6 +44,7 @@
     margin: 1rem 0;
     display: inline-block;
     transition: transform 0.3s;
+    opacity: 0;
   }
 
   #dist.pulse {
@@ -65,6 +60,7 @@
     padding: 0.5rem 1rem;
     border-radius: 12px;
     display: inline-block;
+    opacity: 0;
   }
 
   button {
@@ -77,6 +73,7 @@
     color: #FDFD96;
     cursor: pointer;
     transition: background 0.3s;
+    opacity: 0;
   }
 
   button:hover {
@@ -89,10 +86,23 @@
     100% { transform: scale(1); }
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
+  /* Fade in */
+  .fadeIn {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInAnim 1s forwards;
+  }
+
+  @keyframes fadeInAnim {
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
   }
+
+  /* Delays sequenciais */
+  .delay-1 { animation-delay: 0.2s; }
+  .delay-2 { animation-delay: 0.4s; }
+  .delay-3 { animation-delay: 0.6s; }
+  .delay-4 { animation-delay: 0.8s; }
 
   /* iframe tela cheia */
   #formContainer {
@@ -103,6 +113,7 @@
     height: 100%;
     background: #fff;
     z-index: 9999;
+    opacity: 0; /* fade inicial */
   }
 
   #formContainer iframe {
@@ -114,25 +125,32 @@
 </head>
 <body>
   <div id="mainContent">
-    <img src="logo.png" alt="Grupo Gentil" class="logo">
-    <h1>Distância até o Posto Gentil</h1>
-    <div id="dist">Calculando...</div>
-    <div id="status"></div>
-    <button id="skipBtn">Pular verificação</button>
+    <img src="logo.png" alt="Grupo Gentil" class="logo fadeIn delay-1">
+    <h1 class="fadeIn delay-2">Distância até o Posto Gentil</h1>
+    <div id="dist" class="fadeIn delay-3">Calculando...</div>
+    <div id="status" class="fadeIn delay-4"></div>
+    <button id="skipBtn" class="fadeIn delay-3">Pular verificação</button>
   </div>
 
   <div id="formContainer">
-    <!-- Aqui é onde troca o link do formulario que será indexado -->
     <iframe src="https://tally.so/r/nGW75o" title="Formulário Tally"></iframe>
   </div>
 
 <script>
+// ====== FORÇAR RELOAD SEM CACHE ======
+window.onload = () => {
+  if (!sessionStorage.getItem("reloaded")) {
+    sessionStorage.setItem("reloaded", "true");
+    window.location.reload(true);
+  }
+};
+
 // Coordenadas fixas do Posto Gentil
 const DEST = { lat: -19.151280849020946, lon: -40.62683184296194 };
 
 // Haversine pra calcular a distância até o posto
 function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371000; // Esse é o raio da terra em Metros
+  const R = 6371000; // Raio da Terra em Metros
   const toRad = x => x * Math.PI / 180;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
@@ -143,14 +161,19 @@ function haversine(lat1, lon1, lat2, lon2) {
 }
 
 function formatDist(m) {
-    //Resposnsavel por formatar a distância em KM, caso ultrapasse os 1.000 Metros
   return m < 1000 ? `${m.toFixed(1)} m` : `${(m/1000).toFixed(2)} km`;
 }
 
 function abrirFormulario() {
-    //Abre o IFrame do Formulário
-  document.getElementById("mainContent").style.display = "none";
-  document.getElementById("formContainer").style.display = "block";
+  const main = document.getElementById("mainContent");
+  const formContainer = document.getElementById("formContainer");
+
+  // Esconde o conteúdo principal
+  main.style.display = "none";
+
+  // Mostra o container do iframe e aplica fade in
+  formContainer.style.display = "block";
+  formContainer.classList.add("fadeIn", "delay-1");
 }
 
 function update(pos) {
