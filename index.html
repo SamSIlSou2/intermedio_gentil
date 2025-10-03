@@ -6,6 +6,10 @@
 <title>Distância até o destino</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+  html, body {
+    height: 100%;
+  }
+
   body {
     font-family: 'Poppins', sans-serif;
     background: #FDFD96;
@@ -14,6 +18,15 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  /* quando aplicada no body, previne rolagem */
+  .no-scroll {
+    overflow: hidden !important;
+    touch-action: none !important; /* previne gestos de swipe/pan */
+    height: 100%;
   }
 
   #mainContent {
@@ -55,7 +68,7 @@
     <h1 class="fadeIn delay-2">Distância até o Posto Gentil</h1>
     <div id="dist" class="fadeIn delay-3">Calculando...</div>
     <div id="status" class="fadeIn delay-4"></div>
-    <!-- <button id="skipBtn" class="fadeIn delay-3">Pular verificação</button> -->
+    <button id="skipBtn" class="fadeIn delay-3">Pular verificação</button>
   </div>
 
   <div id="formContainer">
@@ -63,11 +76,52 @@
   </div>
 
 <script>
+// ====== BLOQUEIO DE ROLAGEM ======
+let _preventScrollHandlers = [];
+
+function preventDefault(e) {
+  e.preventDefault();
+}
+
+function disableScroll() {
+  // marca no body para CSS também (backup)
+  document.body.classList.add('no-scroll');
+
+  // bloqueia roda do mouse
+  window.addEventListener('wheel', preventDefault, { passive: false });
+  _preventScrollHandlers.push(['wheel', preventDefault]);
+
+  // bloqueia touchmove (mobile)
+  window.addEventListener('touchmove', preventDefault, { passive: false });
+  _preventScrollHandlers.push(['touchmove', preventDefault]);
+
+  // bloqueia teclas que podem rolar (espaço, setas, pageUp/down)
+  const keyHandler = function(e) {
+    const keys = ['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '];
+    if (keys.includes(e.key)) e.preventDefault();
+  };
+  window.addEventListener('keydown', keyHandler, { passive: false });
+  _preventScrollHandlers.push(['keydown', keyHandler]);
+}
+
+function enableScroll() {
+  document.body.classList.remove('no-scroll');
+  // remove todos handlers adicionados
+  for (const [event, handler] of _preventScrollHandlers) {
+    window.removeEventListener(event, handler);
+  }
+  _preventScrollHandlers = [];
+}
+
 // ====== FORÇAR RELOAD SEM CACHE ======
 window.onload = () => {
+  // desativa rolagem na página de cálculo (conforme pedido)
+  disableScroll();
+
   if (!sessionStorage.getItem("reloaded")) {
     sessionStorage.setItem("reloaded", "true");
-    window.location.reload(true);
+    // Observação: some browsers ignoram true/false no reload, mas tentamos forçar reload
+    window.location.reload();
   }
 };
 
@@ -76,11 +130,13 @@ const DEST = { lat: -19.151280849020946, lon: -40.62683184296194 };
 
 // Haversine pra calcular a distância até o posto
 function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371000;
+  const R = 6371000; // Raio da Terra em Metros
   const toRad = x => x * Math.PI / 180;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  const a = Math.sin(dLat/2)**2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon/2)**2;
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
@@ -90,15 +146,24 @@ function abrirFormulario() {
   const main = document.getElementById("mainContent");
   const formContainer = document.getElementById("formContainer");
 
+  // Esconde o conteúdo principal
   main.style.display = "none";
+
+  // Mostra o container do iframe e aplica fade in
   formContainer.style.display = "block";
   formContainer.classList.add("fadeIn", "delay-1");
+
+  // manter rolagem desativada também quando iframe ocupar a tela
+  // caso quisesse permitir scroll dentro do iframe, remover disableScroll aqui e
+  // adicionar overflow hidden apenas no body; mas por pedido deixamos sem scroll.
+  disableScroll();
 }
 
 // ====== GELOCAÇÃO COM RETRY ======
 function requestLocation() {
   if (!navigator.geolocation) {
-    document.getElementById("status").textContent = "Geolocalização não suportada";
+    const st = document.getElementById("status");
+    st.textContent = "Geolocalização não suportada";
     return;
   }
   navigator.geolocation.getCurrentPosition(update, locationError, { enableHighAccuracy: true });
@@ -108,10 +173,10 @@ function locationError(err) {
   const statusEl = document.getElementById("status");
   if (err.code === 1) { // PERMISSÃO NEGADA
     statusEl.textContent = "Você negou a permissão de localização. Clique aqui para tentar novamente.";
-    statusEl.style.cursor = "pointer"; // muda o cursor para indicar que é clicável
+    statusEl.style.cursor = "pointer";
     statusEl.onclick = () => {
-      statusEl.onclick = null; // evita múltiplos cliques
-      statusEl.style.cursor = "default";
+      statusEl.onclick = null;
+      // tenta novamente pedir permissão
       requestLocation();
     };
   } else {
@@ -120,7 +185,6 @@ function locationError(err) {
     statusEl.onclick = null;
   }
 }
-
 
 // ====== FUNÇÃO UPDATE DISTANCIA ======
 function update(pos) {
@@ -134,13 +198,15 @@ function update(pos) {
     abrirFormulario();
   } else {
     distEl.classList.remove("pulse");
-    document.getElementById("status").textContent = 
+    document.getElementById("status").textContent =
       "📍 Muito longe, só é possível realizar a pesquisa nas dependências do posto";
   }
 }
 
 // Botão de pular verificação
-//document.getElementById("skipBtn").addEventListener("click", abrirFormulario);
+document.getElementById("skipBtn").addEventListener('click', () => {
+  abrirFormulario();
+});
 
 // Chamar localização
 requestLocation();
