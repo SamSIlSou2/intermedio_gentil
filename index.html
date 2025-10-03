@@ -26,101 +26,27 @@
     text-align: center;
   }
 
-  .logo {
-    width: 160px;
-    margin-bottom: 1rem;
-    opacity: 0;
-  }
+  .logo { width: 160px; margin-bottom: 1rem; opacity: 0; }
+  h1 { font-size: 2rem; margin-bottom: 1rem; opacity: 0; }
+  #dist { font-size: 3rem; font-weight: 700; margin: 1rem 0; display: inline-block; transition: transform 0.3s; opacity: 0; }
+  #dist.pulse { animation: pulse 1s infinite; color: #d33; }
+  #status { font-size: 1.2rem; margin: 0.5rem 0; background: rgba(255,255,255,0.5); color: #d33; padding: 0.5rem 1rem; border-radius: 12px; display: inline-block; opacity: 0; }
+  button { margin-top: 1rem; padding: 0.8rem 1.5rem; font-size: 1rem; border: none; border-radius: 8px; background-color: #37352f; color: #FDFD96; cursor: pointer; transition: background 0.3s; opacity: 0; }
+  button:hover { background-color: #5a574f; }
 
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    opacity: 0;
-  }
-
-  #dist {
-    font-size: 3rem;
-    font-weight: 700;
-    margin: 1rem 0;
-    display: inline-block;
-    transition: transform 0.3s;
-    opacity: 0;
-  }
-
-  #dist.pulse {
-    animation: pulse 1s infinite;
-    color: #d33;
-  }
-
-  #status {
-    font-size: 1.2rem;
-    margin: 0.5rem 0;
-    background: rgba(255,255,255,0.5);
-    color: #d33;
-    padding: 0.5rem 1rem;
-    border-radius: 12px;
-    display: inline-block;
-    opacity: 0;
-  }
-
-  button {
-    margin-top: 1rem;
-    padding: 0.8rem 1.5rem;
-    font-size: 1rem;
-    border: none;
-    border-radius: 8px;
-    background-color: #37352f;
-    color: #FDFD96;
-    cursor: pointer;
-    transition: background 0.3s;
-    opacity: 0;
-  }
-
-  button:hover {
-    background-color: #5a574f;
-  }
-
-  @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-  }
+  @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
   /* Fade in */
-  .fadeIn {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInAnim 1s forwards;
-  }
-
-  @keyframes fadeInAnim {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Delays sequenciais */
+  .fadeIn { opacity: 0; transform: translateY(20px); animation: fadeInAnim 1s forwards; }
+  @keyframes fadeInAnim { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   .delay-1 { animation-delay: 0.2s; }
   .delay-2 { animation-delay: 0.4s; }
   .delay-3 { animation-delay: 0.6s; }
   .delay-4 { animation-delay: 0.8s; }
 
   /* iframe tela cheia */
-  #formContainer {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    background: #fff;
-    z-index: 9999;
-    opacity: 0; /* fade inicial */
-  }
-
-  #formContainer iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
+  #formContainer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; opacity: 0; }
+  #formContainer iframe { width: 100%; height: 100%; border: none; }
 </style>
 </head>
 <body>
@@ -150,32 +76,53 @@ const DEST = { lat: -19.151280849020946, lon: -40.62683184296194 };
 
 // Haversine pra calcular a distância até o posto
 function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371000; // Raio da Terra em Metros
+  const R = 6371000;
   const toRad = x => x * Math.PI / 180;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat/2)**2 +
-            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-            Math.sin(dLon/2)**2;
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
-function formatDist(m) {
-  return m < 1000 ? `${m.toFixed(1)} m` : `${(m/1000).toFixed(2)} km`;
-}
+function formatDist(m) { return m < 1000 ? `${m.toFixed(1)} m` : `${(m/1000).toFixed(2)} km`; }
 
 function abrirFormulario() {
   const main = document.getElementById("mainContent");
   const formContainer = document.getElementById("formContainer");
 
-  // Esconde o conteúdo principal
   main.style.display = "none";
-
-  // Mostra o container do iframe e aplica fade in
   formContainer.style.display = "block";
   formContainer.classList.add("fadeIn", "delay-1");
 }
 
+// ====== GELOCAÇÃO COM RETRY ======
+function requestLocation() {
+  if (!navigator.geolocation) {
+    document.getElementById("status").textContent = "Geolocalização não suportada";
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(update, locationError, { enableHighAccuracy: true });
+}
+
+function locationError(err) {
+  const statusEl = document.getElementById("status");
+  if (err.code === 1) { // PERMISSÃO NEGADA
+    statusEl.textContent = "Você negou a permissão de localização. Clique aqui para tentar novamente.";
+    statusEl.style.cursor = "pointer"; // muda o cursor para indicar que é clicável
+    statusEl.onclick = () => {
+      statusEl.onclick = null; // evita múltiplos cliques
+      statusEl.style.cursor = "default";
+      requestLocation();
+    };
+  } else {
+    statusEl.textContent = "Erro no GPS: " + err.message;
+    statusEl.style.cursor = "default";
+    statusEl.onclick = null;
+  }
+}
+
+
+// ====== FUNÇÃO UPDATE DISTANCIA ======
 function update(pos) {
   const { latitude, longitude } = pos.coords;
   const d = haversine(latitude, longitude, DEST.lat, DEST.lon);
@@ -192,14 +139,12 @@ function update(pos) {
   }
 }
 
-function error(err) {
-  document.getElementById("dist").textContent = "Erro no GPS";
-  document.getElementById("status").textContent = err.message;
-}
-
+// Botão de pular verificação
 document.getElementById("skipBtn").addEventListener("click", abrirFormulario);
 
-navigator.geolocation.watchPosition(update, error, { enableHighAccuracy: true });
+// Chamar localização
+requestLocation();
+navigator.geolocation.watchPosition(update, locationError, { enableHighAccuracy: true });
 </script>
 </body>
 </html>
