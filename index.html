@@ -63,7 +63,7 @@
   </div>
 
 <script>
-// ====== FORÇAR RELOAD SEM CACHE ======
+// força o reload da pagina sem cache
 window.onload = () => {
   if (!sessionStorage.getItem("reloaded")) {
     sessionStorage.setItem("reloaded", "true");
@@ -76,7 +76,7 @@ const DEST = { lat: -19.151280849020946, lon: -40.62683184296194 };
 
 // Haversine pra calcular a distância até o posto
 function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371000;
+  const R = 6371000; // Raio da terra em Metros
   const toRad = x => x * Math.PI / 180;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
@@ -95,7 +95,7 @@ function abrirFormulario() {
   formContainer.classList.add("fadeIn", "delay-1");
 }
 
-// ====== GELOCAÇÃO COM RETRY ======
+// Faz a requisição de localização
 function requestLocation() {
   if (!navigator.geolocation) {
     document.getElementById("status").textContent = "Geolocalização não suportada";
